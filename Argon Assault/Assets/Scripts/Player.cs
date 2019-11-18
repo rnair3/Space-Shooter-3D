@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -7,6 +8,18 @@ public class Player : MonoBehaviour
 {
     [Tooltip("m/s")][SerializeField] float xSpeed = 4f;
     [Tooltip("m")] [SerializeField] float xRange = 5f;
+    [Tooltip("m")] [SerializeField] float yRange = 3f;
+
+    [SerializeField] float positionPitchFactor = -5f;
+    [SerializeField] float controlPitchFactor = -20f;
+    [SerializeField] float positionYawFactor = 5f;
+    [SerializeField] float controlRollFactor = -20f;
+
+    private float horizontalThrow, verticalThrow;
+
+    bool enableControl = true;
+    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -16,9 +29,39 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float horizontalThrow = CrossPlatformInputManager.GetAxis("Horizontal");
-        float xOffset = horizontalThrow * xSpeed * Time.deltaTime;
+        if (enableControl)
+        {
+            Translate();
+            Rotate();
+        }
 
-        transform.localPosition = new Vector3(Mathf.Clamp(transform.localPosition.x + xOffset, -xRange, xRange), transform.localPosition.y, transform.localPosition.z);
+    }
+
+    private void Rotate()
+    {
+        float pitch = transform.localPosition.y * positionPitchFactor + verticalThrow * controlPitchFactor;
+        float yaw = transform.localPosition.x * positionYawFactor;
+        float roll = horizontalThrow * controlRollFactor;
+
+        transform.localRotation = Quaternion.Euler(pitch, yaw, roll);
+    }
+
+    private void Translate()
+    {
+        horizontalThrow = CrossPlatformInputManager.GetAxis("Horizontal");
+        verticalThrow = CrossPlatformInputManager.GetAxis("Vertical");
+
+        float xOffset = horizontalThrow * xSpeed * Time.deltaTime;
+        float yOffset = verticalThrow * xSpeed * Time.deltaTime;
+
+        transform.localPosition = new Vector3(Mathf.Clamp(transform.localPosition.x + xOffset, -xRange, xRange),
+                                            Mathf.Clamp(transform.localPosition.y + yOffset, -yRange, yRange),
+                                            transform.localPosition.z);
+    }
+
+
+    void PlayerDeath()
+    {
+        enableControl = false;
     }
 }
