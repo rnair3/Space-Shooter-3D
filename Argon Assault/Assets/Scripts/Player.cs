@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     [Tooltip("m/s")][SerializeField] float xSpeed = 4f;
     [Tooltip("m")] [SerializeField] float xRange = 5f;
     [Tooltip("m")] [SerializeField] float yRange = 3f;
+    [SerializeField] GameObject[] guns;
 
     [SerializeField] float positionPitchFactor = -5f;
     [SerializeField] float controlPitchFactor = -20f;
@@ -33,8 +34,30 @@ public class Player : MonoBehaviour
         {
             Translate();
             Rotate();
+            Shoot();
         }
 
+    }
+
+    private void Shoot()
+    {
+        if (CrossPlatformInputManager.GetButton("Fire1"))
+        {
+            ActivateDeactivateGuns(true);
+        }
+        else
+        {
+            ActivateDeactivateGuns(false);
+        }
+    }
+
+    private void ActivateDeactivateGuns(bool isEnable)
+    {
+        foreach (GameObject gun in guns)
+        {
+            var emission = gun.GetComponent<ParticleSystem>().emission;
+            emission.enabled = isEnable; 
+        }
     }
 
     private void Rotate()
